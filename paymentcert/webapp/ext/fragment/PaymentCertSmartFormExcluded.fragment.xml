@@ -1,0 +1,249 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:m="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:smartForm="sap.ui.comp.smartform"
+    xmlns:smartField="sap.ui.comp.smartfield"
+    xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
+>
+    <!-- Enhanced SmartForm for excluded company codes -->
+    <smartForm:SmartForm
+        id="SmartForm"
+        app:defaultCheckBoxDisplayBehaviour="TrueFalse"
+        app:defaultDropDownDisplayBehaviour="descriptionOnly"
+        editTogglable="false"
+        validationMode="Async"
+        editable="true"
+    >
+        <smartForm:layout>
+            <smartForm:Layout
+                columnsL="3"
+                columnsM="3"
+            />
+        </smartForm:layout>
+        <smartForm:Group>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    editable='{Mode>/IsUpdatable}'
+                    id="PCStatus"
+                    value="{PCStatus}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="ProjectDescription"
+                    value="{ProjectDescription}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="Supplier"
+                    value="{SupplierName}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCAddr"
+                    value="{PCAddr}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PurchaseOrderItemText"
+                    value="{PurchaseOrderItemText}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCType"
+                    value="{PCType}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCMonth"
+                    value="{
+                        path: 'PCMonth',
+                        type: 'sap.ui.model.odata.type.DateTime',
+                        formatOptions: {
+                            'UTC': true,
+                            pattern: 'yyyy-MM'
+                        }
+                    }"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCText"
+                    value="{PCText}"
+                    app:multiLineSettings="{width: '100%', rows: 3, showExceededText: true}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCOgVal"
+                    value="{PCOgVal}"
+                    changeModelValue="onChangeCurrency"
+                    uomEditable="false"
+                    editable="false"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCVarAd"
+                    value="{PCVarAd}"
+                    changeModelValue="onChangeCurrency"
+                    uomEditable="false"
+                    editable="false"
+                />
+            </smartForm:GroupElement>
+
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCTotVal"
+                    value="{PCTotVal}"
+                    changeModelValue="onChangeCurrency"
+                    uomEditable="false"
+                    editable="{Mode>/IsEditable}"
+                />
+            </smartForm:GroupElement>
+
+
+        </smartForm:Group>
+
+        <smartForm:Group>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCCrtd"
+                    value="{PCCrtd}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="Project"
+                    value="{Project}"
+                />
+            </smartForm:GroupElement>
+                        <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCNumber"
+                    value="{PCNumber}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCNumberEntered"
+                    value="{PCNumberEntered}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PurchaseOrder"
+                    value="{PurchaseOrder}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="ATSSubconNo"
+                    value="{ATSSubconNo}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement />
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PerformancePeriodStartDate"
+                    value="{PerformancePeriodStartDate}"
+                />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PerformancePeriodEndDate"
+                    value="{PerformancePeriodEndDate}"
+                />
+            </smartForm:GroupElement>
+
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCAmndPayTerm"
+                    value="{PCAmndPayTerm}"
+                />
+            </smartForm:GroupElement>
+
+            <smartForm:GroupElement label="Subcontract Insurance Requirements &amp; Expiry Date">
+                <m:VBox gap="0.5rem">
+                    <m:HBox alignItems="Center" class="insuranceHBox" renderType="Bare">
+                        <m:Label text="Workmen's Compensation" width="300px" tooltip="Workmen's Compensation"/>
+                        <m:CheckBox
+                            id="PCWrkCpm"
+                            selected="{PCWrkCpm}"
+                            editable="{Mode>/IsEditable}"
+                        />
+                        <smartField:SmartField
+                            id="PCWrkCpmD"
+                            value="{WorkmenCompExpiryDate}"
+                            width="150px"
+                        />
+                    </m:HBox>
+                    <m:HBox alignItems="Center" class="insuranceHBox" renderType="Bare">
+                        <m:Label text="Professional Indemnity" width="300px" tooltip="Professional Indemnity"/>
+                        <m:CheckBox
+                            id="ProfessionalIndemnity"
+                            selected="{ProfessionalIndemnity}"
+                            editable="{Mode>/IsEditable}"
+                        />
+                        <smartField:SmartField
+                            id="PCProIndD"
+                            value="{ProfessionalIndemExpiryDate}"
+                            width="150px"
+                        />
+                    </m:HBox>
+                </m:VBox>
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <m:Label text="" />
+            </smartForm:GroupElement>
+            <smartForm:GroupElement label="Form of Advance Payment Guarantee &amp; Expiry Date" class="groupSeparator">
+                <m:VBox gap="0.5rem">
+                    <m:HBox alignItems="Center" class="insuranceHBox" renderType="Bare">
+                        <m:Label text="Cheque" width="300px" tooltip="Cheque"/>
+                        <m:CheckBox
+                            id="PCAdvPayChq"
+                            selected="{PCAdvPayChq}"
+                            editable="{Mode>/IsEditable}"
+                        />
+                        <smartField:SmartField
+                            id="PCAdvPayChqD"
+                            value="{ChequeExpiryDate}"
+                            width="150px"
+                        />
+                    </m:HBox>
+                    <m:HBox alignItems="Center" class="insuranceHBox" renderType="Bare">
+                        <m:Label text="Bank Guarantee" width="300px" tooltip="Bank Guarantee"/>
+                        <m:CheckBox
+                            id="PCAdvPayBng"
+                            selected="{PCAdvPayBng}"
+                            editable="{Mode>/IsEditable}"
+                        />
+                        <smartField:SmartField
+                            id="PCAdvPayBngD"
+                            value="{BankGuaranteeExpiryDate}"
+                            width="150px"
+                        />
+                    </m:HBox>
+                </m:VBox>
+            </smartForm:GroupElement>
+            <smartForm:GroupElement>
+                <smartField:SmartField
+                    id="PCQc"
+                    value="{PCQc}"
+                />
+            </smartForm:GroupElement>
+        </smartForm:Group>
+
+        <smartForm:Group>
+            <smartForm:GroupElement>
+                <!-- Empty group element -->
+            </smartForm:GroupElement>
+        </smartForm:Group>
+    </smartForm:SmartForm>
+</core:FragmentDefinition>

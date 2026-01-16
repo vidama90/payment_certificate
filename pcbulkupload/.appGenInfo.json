@@ -1,0 +1,29 @@
+{
+  "generationParameters": {
+    "generationDate": "Thu Oct 09 2025 00:37:05 GMT+0530 (India Standard Time)",
+    "generatorPlatform": "Visual Studio Code",
+    "serviceType": "SAP System (ABAP On-Premise)",
+    "metadataFilename": "",
+    "serviceUrl": "https://vhltvds4ci.sap.atg.altayer.com:44300/sap/opu/odata/sap/Z_UI_PPM_PAY_CERT_O2",
+    "appName": "pcbulkupload",
+    "appTitle": "Bulk Upload",
+    "appDescription": "An SAP Fiori application.",
+    "appNamespace": "com.atg.ppm",
+    "ui5Theme": "sap_horizon",
+    "ui5Version": "1.120.14",
+    "enableCodeAssist": false,
+    "enableEslint": false,
+    "enableTypeScript": false,
+    "showMockDataInfo": true,
+    "generatorVersion": "1.18.6",
+    "template": "List Report Page V2",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [
+      {
+        "type": "Main Entity",
+        "value": "SAP__Currencies"
+      }
+    ],
+    "launchText": "To launch the generated application, run the following from the generated application root folder:\n\n```\n    npm start\n```"
+  }
+}

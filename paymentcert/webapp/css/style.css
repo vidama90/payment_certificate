@@ -1,0 +1,40 @@
+tr[data-background="totals"]{
+background: #b6b5b5 !important;
+}
+
+/* Style for AnalyticalTable summary/totals rows */
+#SummaryTable .sapUiAnalyticalTableSum,
+#SummaryTable .sapUiTableRowSummary,
+#SummaryTable tr.sapUiAnalyticalTableSum,
+#SummaryTable tr.sapUiTableRowSummary {
+    background: #b6b5b5 !important;
+    font-weight: bold !important;
+}
+
+/* Remove padding from Summary subsection */
+#PCInputDialog #section2_SS2 .sapUxAPBlockBase {
+    padding-top: 0 !important;
+}
+
+/* Highlight titles in Current Payment Information totals rows */
+/* These rows already have core:CustomData background="totals" in the fragment */
+.sapMListTblRow[data-background="totals"] td:first-child .sapMText {
+    font-weight: 600;
+    color: #0a6ed1; /* SAP primary color */
+}
+
+/* Subtle background for totals rows in sap.m.Table */
+.sapMListTblRow[data-background="totals"] {
+    background-color: rgba(10, 110, 209, 0.06);
+}
+
+/* Insurance HBox with proper spacing */
+.insuranceHBox {
+    gap: 12px !important;
+}
+
+/* Ensure SmartField date fields have proper width */
+.insuranceHBox .sapUiCompSmartField {
+    width: 250px !important;
+}
+

@@ -1,0 +1,222 @@
+{
+  "_version": "1.60.0",
+  "sap.app": {
+    "id": "com.atg.ppm.paymentcert",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:lrop",
+      "version": "1.17.5",
+      "toolsId": "bbd32633-d47b-4f52-81c6-3b230f4238bf"
+    },
+    "dataSources": {
+      "Z_UI_PPM_PAY_CERT_O2_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='Z_UI_PPM_PAY_CERT_O2_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/mainService/Z_UI_PPM_PAY_CERT_O2_VAN.xml"
+        }
+      },
+      "annotation": {
+        "type": "ODataAnnotation",
+        "uri": "annotations/annotation.xml",
+        "settings": {
+          "localUri": "annotations/annotation.xml"
+        }
+      },
+      "mainService": {
+        "uri": "/sap/opu/odata/sap/Z_UI_PPM_PAY_CERT_O2/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "Z_UI_PPM_PAY_CERT_O2_VAN",
+            "annotation"
+          ],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.120.14",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ushell": {},
+        "sap.f": {},
+        "sap.ui.comp": {},
+        "sap.ui.generic.app": {},
+        "sap.suite.ui.generic.template": {}
+      },
+      "components": {
+        "sap.se.mi.plm.lib.attachmentservice.attachment": {
+          "lazy": true
+        }
+      }
+    },
+    "componentUsages": {
+      "attachmentReuseComponent": {
+        "name": "sap.se.mi.plm.lib.attachmentservice.attachment",
+        "settings": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.atg.ppm.paymentcert.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "defaultBindingMode": "TwoWay",
+          "defaultCountMode": "Inline",
+          "refreshAfterChange": false,
+          "metadataUrlParams": {
+            "sap-value-list": "none"
+          }
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {},
+      "routes": [],
+      "targets": {}
+    },
+    "extends": {
+      "extensions": {
+        "sap.ui.controllerExtensions": {
+          "sap.suite.ui.generic.template.ObjectPage.view.Details": {
+            "controllerName": "com.atg.ppm.paymentcert.ext.controller.ObjectPageExt",
+            "sap.ui.generic.app": {
+              "ProjectPOItem": {
+                "EntitySet": "ProjectPOItem",
+                "Sections": {
+                  "PayCert": {
+                    "id": "PayCert",
+                    "Actions": {
+                      "CreatePC": {
+                        "id": "CreatePCButton",
+                        "text": "{@i18n>createPc}",
+                        "press": "onClickCreatePC",
+                        "requiresSelection": false
+                      },
+                      "ChangePC": {
+                        "id": "ChangePCButton",
+                        "text": "{@i18n>changePc}",
+                        "press": "onClickChangePC",
+                        "requiresSelection": true,
+                        "applicablePath": "IsEnabled"
+                      },
+                      "DisplayPC": {
+                        "id": "DisplayPCButton",
+                        "text": "{@i18n>displayPc}",
+                        "press": "onClickDisplayPC",
+                        "requiresSelection": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.ui.generic.app": {
+    "_version": "1.3.0",
+    "settings": {
+      "forceGlobalRefresh": false,
+      "objectPageHeaderType": "Dynamic",
+      "considerAnalyticalParameters": true,
+      "showDraftToggle": false,
+      "flexibleColumnLayout": {
+        "defaultTwoColumnLayoutType": "TwoColumnsMidExpanded",
+        "defaultThreeColumnLayoutType": "ThreeColumnsEndExpanded"
+      }
+    },
+    "pages": {
+      "ListReport|ProjectPOItem": {
+        "entitySet": "ProjectPOItem",
+        "component": {
+          "name": "sap.suite.ui.generic.template.ListReport",
+          "list": true,
+          "settings": {
+            "condensedTableLayout": true,
+            "smartVariantManagement": true,
+            "enableTableFilterInPageVariant": true,
+            "filterSettings": {
+              "dateSettings": {
+                "useDateRange": true
+              }
+            },
+            "tableSettings": {
+              "type": "ResponsiveTable"
+            }
+          }
+        },
+        "pages": {
+          "ObjectPage|ProjectPOItem": {
+            "entitySet": "ProjectPOItem",
+            "defaultLayoutTypeIfExternalNavigation": "MidColumnFullScreen",
+            "component": {
+              "name": "sap.suite.ui.generic.template.ObjectPage",
+              "settings": {
+                "tableSettings": {
+                  "stickyHeaderEnabled": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  }
+}

@@ -1,0 +1,809 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:m="sap.m"
+    xmlns:uxap="sap.uxap"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    xmlns:u="sap.ui.unified"
+    xmlns:sf="sap.ui.comp.smartfield"
+    xmlns:form="sap.ui.comp.smartform"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:table="sap.ui.table"
+    xmlns:smartForm="sap.ui.comp.smartform"
+    xmlns:smartField="sap.ui.comp.smartfield"
+    xmlns:smartTable="sap.ui.comp.smarttable"
+    xmlns:s="sap.ui.comp.smartmultiinput"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
+>
+    <Dialog
+        id="PCInputDialog"
+        contentWidth="100%"
+        contentHeight="100%"
+        afterOpen=".bindModelContext"
+        horizontalScrolling="false"
+        verticalScrolling="false"
+        stretch="true"
+    >
+        <uxap:ObjectPageLayout
+            id="uxap:ObjectPageLayout"
+            upperCaseAnchorBar="false"
+        >
+            <uxap:headerTitle>
+                <uxap:ObjectPageDynamicHeaderTitle>
+                    <uxap:heading>
+                        <m:Title
+                            text="{CertHeader>/Name}"
+                            wrapping="true"
+                        />
+                    </uxap:heading>
+
+                    <uxap:snappedTitleOnMobile>
+                        <m:Title text="{CertHeader>/Name}" />
+                    </uxap:snappedTitleOnMobile>
+                </uxap:ObjectPageDynamicHeaderTitle>
+            </uxap:headerTitle>
+
+            <!-- <uxap:headerContent>
+		<m:Title text="This example explains how the Anchor Bar is built based on page content"
+			titleStyle="H6"/>
+	</uxap:headerContent> -->
+
+            <uxap:sections>
+                <uxap:ObjectPageSection
+                    titleUppercase="false"
+                    id="section1"
+                    title="General Information"
+                >
+                    <uxap:subSections>
+                        <uxap:ObjectPageSubSection
+                            class="sapUxAPObjectPageSubSectionFitContainer"
+                            id="section1_SS1"
+                            title="General Information"
+                        >
+                            <uxap:blocks>
+                                <!-- SmartForm will be dynamically loaded here based on IsExcludedCompanyCode -->
+                                <m:VBox id="smartFormContainer" />
+                            </uxap:blocks>
+                        </uxap:ObjectPageSubSection>
+                    </uxap:subSections>
+                </uxap:ObjectPageSection>
+
+                <uxap:ObjectPageSection
+                    titleUppercase="false"
+                    id="section2"
+                    title=""
+                >
+                    <uxap:subSections>
+                        <uxap:ObjectPageSubSection
+                            id="section2_SS2"
+                            title="Summary"
+                            titleUppercase="false"
+                        >
+                            <uxap:blocks>
+                                <table:AnalyticalTable
+                                    id="SummaryTable"
+                                    visibleRowCountMode="Auto"
+                                    alternateRowColors="true"
+                                    showNoData="true"
+                                    selectionMode="Single"
+                                    enableColumnFreeze="true"
+                                    fixedColumnCount="1"
+                                    class="dynamicHeightTable"
+                                >
+                                    <table:columns>
+                                        <table:AnalyticalColumn
+                                            width="5rem"
+                                            leadingProperty="PCNumber"
+                                        >
+                                            <Label text="Payment No" />
+                                            <table:template>
+                                                <Text text="{PCNumber}" />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="10rem"
+                                            leadingProperty="PCText"
+                                        >
+                                            <Label text="Description" />
+                                            <table:template>
+                                                <Text text="{PCText}" />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCAdvPym"
+                                            summed="true"
+                                        >
+                                            <Label text="Advance Payments" />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCAdvPym', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCWipAm"
+                                            summed="true"
+                                        >
+                                            <Label
+                                                text="Work Completed For This Period"
+                                            />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCWipAm', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCMatOns"
+                                            summed="true"
+                                        >
+                                            <Label text="Materials On Site" />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCMatOns', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCAdvPymRec"
+                                            summed="true"
+                                        >
+                                            <Label
+                                                text="Advance Payments Recovery"
+                                            />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCAdvPymRec', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCContDed"
+                                            summed="true"
+                                        >
+                                            <Label text="Contract Deduction" />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCContDed', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCLessRet"
+                                            summed="true"
+                                        >
+                                            <Label text="Less Retention" />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCLessRet', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCRevRet"
+                                            summed="true"
+                                        >
+                                            <Label
+                                                text="Reversal Of Retention"
+                                            />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCRevRet', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCNetCer"
+                                            summed="true"
+                                        >
+                                            <Label text="Net Certificate" />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCNetCer', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCTax"
+                                            summed="true"
+                                        >
+                                            <Label text="Tax" />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCTax', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                        <table:AnalyticalColumn
+                                            width="9rem"
+                                            hAlign="End"
+                                            leadingProperty="PCTotPay"
+                                            summed="true"
+                                        >
+                                            <Label text="Total Payable" />
+                                            <table:template>
+                                                <Text
+                                                    text="{parts: ['PCTotPay', 'DocumentCurrency'], type: 'sap.ui.model.type.Currency'}"
+                                                    textAlign="End"
+                                                />
+                                            </table:template>
+                                        </table:AnalyticalColumn>
+                                    </table:columns>
+                                </table:AnalyticalTable>
+                            </uxap:blocks>
+                        </uxap:ObjectPageSubSection>
+                    </uxap:subSections>
+                </uxap:ObjectPageSection>
+
+                <uxap:ObjectPageSection
+                    titleUppercase="false"
+                    id="section3"
+                    title=""
+                >
+                    <uxap:subSections>
+                        <uxap:ObjectPageSubSection
+                            class="sapUxAPObjectPageSubSectionFitContainer"
+                            id="section3_SS1"
+                            title="Current Payment Information"
+                            titleUppercase="false"
+                        >
+                            <uxap:blocks>
+                                <Table id="CurrentInfoTable">
+                                    <columns>
+                                        <Column>
+                                            <Text text="Payment Details" />
+                                        </Column>
+                                        <Column hAlign="End">
+                                            <Text text="Original Contract" />
+                                        </Column>
+                                        <Column hAlign="End">
+                                            <Text text="Previous Cumulative" />
+                                        </Column>
+                                        <Column hAlign="End">
+                                            <Text text="Cumulative To-Date" />
+                                        </Column>
+                                        <Column hAlign="End">
+                                            <Text text="Current" />
+                                        </Column>
+                                        <Column>
+                                            <Text text="Remarks" />
+                                        </Column>
+                                    </columns>
+                                    <items>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row1/1}"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['OrigContract>/PCPcOgWip', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{Mode>/IsEditable}"
+                                                    textAlign="End"
+                                                />
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPcMWi',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdWipAm', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCWipAm', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{Remarks>/PCPcTxtWip}"
+                                                    editable="{Mode>/IsEditable}"
+                                                />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row2/1}"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['OrigContract>/PCPcOgVad','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{Mode>/IsEditable}"
+                                                    textAlign="End"
+                                                />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmVAd',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdVarAd1','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCVarAd1', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{Remarks>/PCPcTxtVad}"
+                                                    editable="{Mode>/IsEditable}"
+                                                />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row3/1}"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['OrigContract>/PCPcOgVom','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{Mode>/IsEditable}"
+                                                    textAlign="End"
+                                                />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmVOm',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdVarOm1','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCVaRom1', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{Remarks>/PCPcTxtVom}"
+                                                    editable="{Mode>/IsEditable}"
+                                                />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row4/1}"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['OrigContract>/PCPcOgMtOn','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{Mode>/IsEditable}"
+                                                    textAlign="End"
+                                                />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmMtOn',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdmatOns','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCMatOns', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{Remarks>/PCPcTxtMtOn}"
+                                                    editable="{Mode>/IsEditable}"
+                                                />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row5/1}"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['OrigContract>/PCPcOgMtRec','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{Mode>/IsEditable}"
+                                                    textAlign="End"
+                                                />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmMtRec',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdMatRec','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCMatRec', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{Remarks>/PCPcTxtMtRec}"
+                                                    editable="{Mode>/IsEditable}"
+                                                />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <customData>
+                                                <core:CustomData
+                                                    key="background"
+                                                    value="totals"
+                                                    writeToDom="true"
+                                                />
+                                            </customData>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row6/1}"
+                                                />
+                                                <Text text="" />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmTotComp',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <!-- <Input
+													value="{ parts: ['Cuml2Date>/PCCdTotComp','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+													change=".calcCurrentModel('PCCdTotComp')"
+													editable="false" 
+													/> -->
+                                                <Text
+                                                    text="{path:'Cuml2Date>/PCCdTotComp',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Text
+                                                    text="{path:'CurrModel>/PCTotComp',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Text text="" />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row7/1}"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['OrigContract>/PCPcOgAdvPy','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{Mode>/IsEditable}"
+                                                    textAlign="End"
+                                                />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmAdvPy',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdAdvPym','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCAdvPym', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{Remarks>/PCPctxtAdvPy}"
+                                                    editable="{Mode>/IsEditable}"
+                                                />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row8/1}"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['OrigContract>/PCPcOgAdvRec','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{Mode>/IsEditable}"
+                                                    textAlign="End"
+                                                />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmAdvRec',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdAdvPymRec','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCAdvPymRec', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{Remarks>/PCPcTxtAdvRec}"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{Mode>/IsEditable}"
+                                                />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row9/1}"
+                                                />
+                                                <Text text="" />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmRetHld',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdLessRet','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel('PCCdLessRet')"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCLessRet', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel('PCLessRet')"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Text text="" />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row10/1}"
+                                                />
+                                                <Text text="" />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmRetRel',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdRevRet','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCRevRet', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Text text="" />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row11/1}"
+                                                />
+                                                <Text text="" />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmContDed',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdContDed','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCContDed', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel()"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Text text="" />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <customData>
+                                                <core:CustomData
+                                                    key="background"
+                                                    value="totals"
+                                                    writeToDom="true"
+                                                />
+                                            </customData>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row12/1}"
+                                                />
+                                                <Text text="" />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmNetCer',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <!-- <Input
+													value="{ parts: ['Cuml2Date>/PCCdNetCer','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+													change=".calcCurrentModel('PCCdNetCer')"
+													editable="false" /> -->
+                                                <Text
+                                                    text="{path:'Cuml2Date>/PCCdNetCer',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+
+                                                <Text
+                                                    text="{path:'CurrModel>/PCNetCer',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Text text="" />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row13/1}"
+                                                />
+                                                <Text text="" />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmVat',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Input
+                                                    value="{ parts: ['Cuml2Date>/PCCdTax','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel('PCCdTax')"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; !${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+
+                                                <Input
+                                                    value="{ parts: ['CurrModel>/PCTax', 'Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+                                                    change=".calcCurrentModel('PCTax')"
+                                                    editable="{= ${Mode>/IsEditable} &amp;&amp; ${Mode>/IsExcludedCompanyCode} }"
+                                                    textAlign="End"
+                                                />
+                                                <Text text="" />
+                                            </cells>
+                                        </ColumnListItem>
+                                        <ColumnListItem>
+                                            <customData>
+                                                <core:CustomData
+                                                    key="background"
+                                                    value="totals"
+                                                    writeToDom="true"
+                                                />
+                                            </customData>
+                                            <cells>
+                                                <Text
+                                                    text="{FirstCol>/Row14/1}"
+                                                />
+                                                <Text text="" />
+
+                                                <Text
+                                                    text="{path:'PrevCuml>/PCPCmTotPay',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <!-- <Input
+													value="{ parts: ['Cuml2Date>/PCCdTotPay','Currency>/Name'],type: 'sap.ui.model.type.Currency',formatOptions: {showMeasure: true , maxFractionDigits: 2 ,  maxIntegerDigits: 11, groupingSeparator : ',' , decimalSeparator: '.' } }"
+													change=".calcCurrentModel('PCCdTotPay')"
+													editable="false" /> -->
+                                                <Text
+                                                    text="{path:'Cuml2Date>/PCCdTotPay',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+
+                                                <Text
+                                                    text="{path:'CurrModel>/PCTotPay',formatter: '.formatCurr'}"
+                                                    textAlign="End"
+                                                />
+                                                <Text text="" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                            </uxap:blocks>
+                        </uxap:ObjectPageSubSection>
+                    </uxap:subSections>
+                </uxap:ObjectPageSection>
+                <uxap:ObjectPageSection
+                    titleUppercase="false"
+                    id="section4"
+                    title=""
+                    visible="{=${Mode>/IsCreateBttnEnabled}===true?false:true}"
+                >
+                    <uxap:subSections>
+                        <uxap:ObjectPageSubSection
+                            id="section4_SS1"
+                            title="Attachments"
+                            titleUppercase="false"
+                        >
+                            <uxap:blocks>
+                                <core:ComponentContainer
+                                    id="attachmentComponentContainer"
+                                />
+                            </uxap:blocks>
+                        </uxap:ObjectPageSubSection>
+                    </uxap:subSections>
+                </uxap:ObjectPageSection>
+            </uxap:sections>
+        </uxap:ObjectPageLayout>
+        <buttons>
+            <Button
+                type="Emphasized"
+                visible="{Mode>/IsDwnlBttnEnabled}"
+                press=".downloadForm"
+                text="Download"
+            />
+            <Button
+                type="Accept"
+                visible="{Mode>/IsCreateBttnEnabled}"
+                press=".createPayCert"
+                text="Save"
+            />
+            <Button
+                type="Accept"
+                visible="{Mode>/IsUpdatable}"
+                press=".savePayCert"
+                text="Save"
+            />
+            <Button
+                type="Reject"
+                press=".onCloseDialog"
+                text="Close"
+            />
+        </buttons>
+    </Dialog>
+</core:FragmentDefinition>
