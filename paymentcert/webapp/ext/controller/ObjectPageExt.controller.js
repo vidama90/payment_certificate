@@ -854,7 +854,38 @@ sap.ui.define([
         },
 
         onClickChangePC: async function (oEvent) {
+            var that = this;
+            var aSelectedItems = oEvent.getSource().getParent().getParent().getSelectedItems();
+            if (!aSelectedItems || aSelectedItems.length === 0) {
+                MessageToast.show("Please select a payment certificate before proceeding.");
+                return;
+            }
+            var oPCert = aSelectedItems[0].getBindingContext().getObject();
+            
+            // Check if PC status is 3 (Approved) - show confirmation dialog
+            if (oPCert.PCStatus === "3") {
+                var oFormattedText = new sap.m.FormattedText({
+                    htmlText: "Before changing an approved PC, please manually cancel the existing Service Entry Sheet.<br><br>" +
+                        "Failure to do so will result in the system generating a duplicate Service Entry Sheet upon re-approval.<br><br>" +
+                        "<strong>Changes to approved PCs should be made only in exceptional circumstances.</strong>"
+                });
+                MessageBox.warning(oFormattedText, {
+                        title: "Warning - Approved Payment Certificate",
+                        actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+                        emphasizedAction: MessageBox.Action.CANCEL,
+                        onClose: function (sAction) {
+                            if (sAction === MessageBox.Action.OK) {
+                                that._proceedWithChangePC(oPCert);
+                            }
+                        }
+                    }
+                );
+            } else {
+                this._proceedWithChangePC(oPCert);
+            }
+        },
 
+        _proceedWithChangePC: async function (oPCert) {
             this._setCustomModels();
             this.getView().getModel('CertHeader').setProperty('/Name', "Update Payment Certificate");
             this.getView().getModel('Mode').setProperty('/IsDwnlBttnEnabled', true);
@@ -862,7 +893,6 @@ sap.ui.define([
 
             BusyIndicator.show();
 
-            var oPCert = oEvent.getSource().getParent().getParent().getSelectedItems()[0].getBindingContext().getObject();
             if (!this._paramDialog) {
                 Fragment.load({
                     id: "PCInputFrag",
@@ -1123,8 +1153,8 @@ sap.ui.define([
                 }
 
                 // STEP 3: Calculate Retention on CUMULATIVE (same as normal mode)
-                // Skip if user manually entered Current Retention OR if update scenario with existing value
-                var shouldCalculateLessRetExcl = InputField !== 'PCLessRet' &&
+                // Skip if user manually entered Current or Cumulative Retention OR if update scenario with existing value
+                var shouldCalculateLessRetExcl = InputField !== 'PCLessRet' && InputField !== 'PCCdLessRet' &&
                     (!isUpdateScenario || !oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") ||
                         oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") === "0.00");
                 if (shouldCalculateLessRetExcl) {
@@ -1147,11 +1177,14 @@ sap.ui.define([
                         // Derive Current from Cumulative
                         oCurrModel.setProperty('/PCLessRet', Number(oCuml2DateModel.getProperty("/PCCdLessRet")) - Number(oPrevCumlModel.getProperty("/PCPCmRetHld")));
                     }
-                } else {
+                } else if (!isUpdateScenario || !oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") ||
+                        oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") === "0.00") {
                     // User manually entered Current Retention, calculate Cumulative from it
+                    // Only if NOT an update scenario with existing backend value
                     if (!isNaN(oCurrModel.getProperty("/PCLessRet")))
                         oCuml2DateModel.setProperty('/PCCdLessRet', Number(oPrevCumlModel.getProperty("/PCPCmRetHld")) + Number(oCurrModel.getProperty("/PCLessRet")));
                 }
+                // If update scenario with existing value and user manually entered, do nothing - keep both values as-is
 
                 // STEP 4: Calculate Net Amount Certified on CUMULATIVE (same as normal mode)
                 // Skip if user manually entered Current Net Amount
@@ -1240,7 +1273,7 @@ sap.ui.define([
                 }
 
                 // Calculate Retention (skip if manually entered OR if update scenario with existing value)
-                var shouldCalculateLessRet = InputField !== 'PCCdLessRet' &&
+                var shouldCalculateLessRet = InputField !== 'PCCdLessRet' && InputField !== 'PCLessRet' &&
                     (!isUpdateScenario || !oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") ||
                         oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") === "0.00");
                 if (shouldCalculateLessRet) {
