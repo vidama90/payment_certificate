@@ -811,13 +811,277 @@ sap.ui.define([
         },
 
         onClickCreatePC: async function (oEvent) {
+            var that = this;
+            var oPOItem = oEvent.getSource().getBindingContext().getObject();
+            
+            // First check if a PC already exists for the current month
+            this._checkCurrentMonthPCExists(oPOItem, function() {
+                // Then check previous month's payment certificate approval status
+                that._checkPreviousMonthPCStatus(oPOItem, function() {
+                    // Callback - proceed with create if checks pass
+                    that._proceedWithCreatePC(oPOItem);
+                });
+            });
+        },
+        
+        /**
+         * Check if a non-deleted PC already exists for the current month
+         * @param {object} oPOItem - Purchase Order Item object
+         * @param {function} fnCallback - Callback to execute if no PC exists or user chooses to create new
+         * @private
+         */
+        _checkCurrentMonthPCExists: function(oPOItem, fnCallback) {
+            var that = this;
+            var oModel = this.getView().getModel();
+            
+            BusyIndicator.show();
+            
+            // Calculate current month's date range using UTC noon to avoid timezone shifts
+            var dToday = new Date();
+            var dCurrentMonthStart = new Date(Date.UTC(dToday.getFullYear(), dToday.getMonth(), 1, 12, 0, 0));
+            // Last day of current month = day 0 of next month
+            var dCurrentMonthEnd = new Date(Date.UTC(dToday.getFullYear(), dToday.getMonth() + 1, 0, 12, 0, 0));
+            
+            // Build filters to check current month's PC
+            // Exclude deleted PCs (status = 5)
+            var aFilters = [
+                new sap.ui.model.Filter("PurchaseOrder", sap.ui.model.FilterOperator.EQ, oPOItem.PO),
+                new sap.ui.model.Filter("PurchaseOrderItem", sap.ui.model.FilterOperator.EQ, oPOItem.POItem),
+                new sap.ui.model.Filter("Project", sap.ui.model.FilterOperator.EQ, oPOItem.Project),
+                new sap.ui.model.Filter("WBSElement", sap.ui.model.FilterOperator.EQ, oPOItem.WBSElement),
+                new sap.ui.model.Filter("PCMonth", sap.ui.model.FilterOperator.BT, dCurrentMonthStart, dCurrentMonthEnd),
+                new sap.ui.model.Filter("PCStatus", sap.ui.model.FilterOperator.NE, "5")
+            ];
+            
+            oModel.read("/PaymentCertificate", {
+                filters: aFilters,
+                success: function(oResult) {
+                    BusyIndicator.hide();
+                    var oExistingPC = oResult.results[0];
+                    
+                    if (oExistingPC) {
+                        // PC exists for current month - ask user what to do
+                        var sCurrentMonthFormatted = that._formatMonthYear(dCurrentMonthStart);
+                        var sStatusText = that._getPCStatusText(oExistingPC.PCStatus);
+                        
+                        MessageBox.warning(
+                            "A payment certificate already exists for " + sCurrentMonthFormatted + " with status '" + sStatusText + "'.\n\n" +
+                            "Would you like to change the existing payment certificate instead?",
+                            {
+                                title: "Payment Certificate Already Exists",
+                                actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                                emphasizedAction: MessageBox.Action.YES,
+                                onClose: function(sAction) {
+                                    if (sAction === MessageBox.Action.YES) {
+                                        // Map OData fields to expected format for _proceedWithChangePC
+                                        var oMappedPC = {
+                                            PO: oExistingPC.PurchaseOrder,
+                                            POItem: oExistingPC.PurchaseOrderItem,
+                                            Project: oExistingPC.Project,
+                                            WBSElement: oExistingPC.WBSElement,
+                                            PCNumber: oExistingPC.PCNumber,
+                                            PCStatus: oExistingPC.PCStatus
+                                        };
+                                        // Navigate to change the existing PC
+                                        that._proceedWithChangePC(oMappedPC);
+                                    } else {
+                                        // User chose NO - proceed with creating a new one
+                                        fnCallback();
+                                    }
+                                }
+                            }
+                        );
+                    } else {
+                        // No PC exists for current month - proceed with checks
+                        fnCallback();
+                    }
+                },
+                error: function(oError) {
+                    BusyIndicator.hide();
+                    console.error("Error checking for current month's PC:", oError);
+                    // Proceed with create anyway if check fails
+                    fnCallback();
+                }
+            });
+        },
+        
+        /**
+         * Check if previous month's payment certificate is approved
+         * Skip warning if this is the first-ever PC for this PO Item
+         * @param {object} oPOItem - Purchase Order Item object
+         * @param {function} fnCallback - Callback to execute if checks pass
+         * @private
+         */
+        _checkPreviousMonthPCStatus: function(oPOItem, fnCallback) {
+            var that = this;
+            var oModel = this.getView().getModel();
+            
+            BusyIndicator.show();
+            
+            // First check if ANY payment certificates exist for this PO Item (to determine if this is the first-ever PC)
+            // Exclude deleted PCs (status = 5) from the count
+            var aFilters = [
+                new sap.ui.model.Filter("PurchaseOrder", sap.ui.model.FilterOperator.EQ, oPOItem.PO),
+                new sap.ui.model.Filter("PurchaseOrderItem", sap.ui.model.FilterOperator.EQ, oPOItem.POItem),
+                new sap.ui.model.Filter("Project", sap.ui.model.FilterOperator.EQ, oPOItem.Project),
+                new sap.ui.model.Filter("WBSElement", sap.ui.model.FilterOperator.EQ, oPOItem.WBSElement),
+                new sap.ui.model.Filter("PCStatus", sap.ui.model.FilterOperator.NE, "5")
+            ];
+            
+            oModel.read("/PaymentCertificate/$count", {
+                filters: aFilters,
+                success: function(iCount) {
+                    if (parseInt(iCount, 10) === 0) {
+                        // This is the first-ever PC for this PO Item - no need to check previous month
+                        BusyIndicator.hide();
+                        fnCallback();
+                        return;
+                    }
+                    
+                    // PCs exist - check if previous month's PC is approved
+                    that._checkPreviousMonthPCApproval(oPOItem, fnCallback);
+                },
+                error: function(oError) {
+                    BusyIndicator.hide();
+                    console.error("Error checking for existing payment certificates:", oError);
+                    // Proceed with create anyway if check fails
+                    fnCallback();
+                }
+            });
+        },
+        
+        /**
+         * Check the previous month's PC approval status when PCs already exist
+         * @param {object} oPOItem - Purchase Order Item object
+         * @param {function} fnCallback - Callback to execute if checks pass
+         * @private
+         */
+        _checkPreviousMonthPCApproval: function(oPOItem, fnCallback) {
+            var that = this;
+            var oModel = this.getView().getModel();
+            
+            // Calculate previous month's date range using UTC noon to avoid timezone shifts
+            var dToday = new Date();
+            var dPreviousMonthStart = new Date(Date.UTC(dToday.getFullYear(), dToday.getMonth() - 1, 1, 12, 0, 0));
+            var dPreviousMonthEnd = new Date(Date.UTC(dToday.getFullYear(), dToday.getMonth(), 0, 12, 0, 0));
+            
+            // Build filters to check previous month's PC using BT (between) operator
+            // Exclude deleted PCs (status = 5) from the check
+            var aFilters = [
+                new sap.ui.model.Filter("PurchaseOrder", sap.ui.model.FilterOperator.EQ, oPOItem.PO),
+                new sap.ui.model.Filter("PurchaseOrderItem", sap.ui.model.FilterOperator.EQ, oPOItem.POItem),
+                new sap.ui.model.Filter("Project", sap.ui.model.FilterOperator.EQ, oPOItem.Project),
+                new sap.ui.model.Filter("WBSElement", sap.ui.model.FilterOperator.EQ, oPOItem.WBSElement),
+                new sap.ui.model.Filter("PCMonth", sap.ui.model.FilterOperator.BT, dPreviousMonthStart, dPreviousMonthEnd),
+                new sap.ui.model.Filter("PCStatus", sap.ui.model.FilterOperator.NE, "5")
+            ];
+            
+            oModel.read("/PaymentCertificate", {
+                filters: aFilters,
+                success: function(oResult) {
+                    BusyIndicator.hide();
+                    var oPreviousPC = oResult.results[0];
+                    
+                    if (oPreviousPC) {
+                        // Previous month's PC exists - check if approved (status = 3)
+                        if (oPreviousPC.PCStatus !== "3") {
+                            // Previous month's PC is NOT approved - show warning
+                            var sStatusText = that._getPCStatusText(oPreviousPC.PCStatus);
+                            var sPreviousMonthFormatted = that._formatMonthYear(dPreviousMonthStart);
+                            
+                            MessageBox.warning(
+                                "The payment certificate for " + sPreviousMonthFormatted + " is currently in '" + sStatusText + "' status and has not been approved yet. " +
+                                "It is recommended to approve the previous month's payment certificate before creating a new one.\n\n" +
+                                "Do you want to continue creating a new payment certificate anyway?",
+                                {
+                                    title: "Previous Month PC Not Approved",
+                                    actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                                    emphasizedAction: MessageBox.Action.NO,
+                                    onClose: function(sAction) {
+                                        if (sAction === MessageBox.Action.YES) {
+                                            fnCallback();
+                                        }
+                                        // If NO, just close - don't proceed
+                                    }
+                                }
+                            );
+                        } else {
+                            // Previous month's PC is approved - proceed normally
+                            fnCallback();
+                        }
+                    } else {
+                        // No previous month's PC exists but other PCs do - show warning
+                        var sPreviousMonthFormatted = that._formatMonthYear(dPreviousMonthStart);
+                        
+                        MessageBox.warning(
+                            "No payment certificate exists for " + sPreviousMonthFormatted + ". " +
+                            "It is recommended to create and approve the previous month's payment certificate before creating a new one.\n\n" +
+                            "Do you want to continue creating a new payment certificate anyway?",
+                            {
+                                title: "Previous Month PC Missing",
+                                actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                                emphasizedAction: MessageBox.Action.NO,
+                                onClose: function(sAction) {
+                                    if (sAction === MessageBox.Action.YES) {
+                                        fnCallback();
+                                    }
+                                    // If NO, just close - don't proceed
+                                }
+                            }
+                        );
+                    }
+                },
+                error: function(oError) {
+                    BusyIndicator.hide();
+                    console.error("Error checking previous month's PC:", oError);
+                    // Proceed with create anyway if check fails
+                    fnCallback();
+                }
+            });
+        },
+        
+        /**
+         * Get readable status text from PC status code
+         * @param {string} sStatus Status code
+         * @returns {string} Status text
+         * @private
+         */
+        _getPCStatusText: function(sStatus) {
+            switch (sStatus) {
+                case "1": return "Created";
+                case "2": return "In-Approval";
+                case "3": return "Approved";
+                case "4": return "Rejected";
+                case "5": return "Deleted";
+                case "6": return "Migrated PC";
+                default: return "Unknown";
+            }
+        },
+        
+        /**
+         * Format date to Month Year string
+         * @param {Date} dDate Date to format
+         * @returns {string} Formatted string (e.g., "January 2026")
+         * @private
+         */
+        _formatMonthYear: function(dDate) {
+            var aMonths = ["January", "February", "March", "April", "May", "June",
+                          "July", "August", "September", "October", "November", "December"];
+            return aMonths[dDate.getMonth()] + " " + dDate.getFullYear();
+        },
+        
+        /**
+         * Proceed with create PC after validation checks pass
+         * @param {object} oPOItem - Purchase Order Item object
+         * @private
+         */
+        _proceedWithCreatePC: async function(oPOItem) {
             this._setCustomModels();
             this.getView().getModel('CertHeader').setProperty('/Name', "Create Payment Certificate");
             this.getView().getModel('Mode').setProperty('/IsCreateBttnEnabled', true);
 
             BusyIndicator.show();
 
-            var oPOItem = oEvent.getSource().getBindingContext().getObject();
             if (!this._paramDialog) {
                 Fragment.load({
                     id: "PCInputFrag",
@@ -839,7 +1103,6 @@ sap.ui.define([
                     MessageBox.error("Failed to load dialog: " + error.message);
                 });
             } else {
-                //this.settBindingContext();
                 try {
                     await this._setDefaultValues(oPOItem);
                     this.calcCurrentModel();
@@ -847,10 +1110,8 @@ sap.ui.define([
                 } catch (error) {
                     MessageBox.error("Failed to load data: " + error.message);
                 }
-
+                BusyIndicator.hide();
             }
-            //this._setFileUploader();
-            //MessageToast.show("Custom handler invoked.");
         },
 
         onClickChangePC: async function (oEvent) {
@@ -1066,6 +1327,14 @@ sap.ui.define([
             this._setStatusDraftTo1();
             var oData = oForm.getBindingContext().getObject();
             delete oData.__metadata
+            
+            // Normalize PCMonth to 1st of the month at UTC noon to avoid timezone shifts
+            // Creating at local midnight can shift to previous day when converted to UTC
+            // e.g., Feb 1 00:00 UAE (UTC+4) = Jan 31 20:00 UTC → saves as Jan 31
+            if (oData.PCMonth && oData.PCMonth instanceof Date) {
+                // Create date at UTC noon on the 1st of the month
+                oData.PCMonth = new Date(Date.UTC(oData.PCMonth.getFullYear(), oData.PCMonth.getMonth(), 1, 12, 0, 0));
+            }
 
             var oOrigContractModel = this.getView().getModel('OrigContract');
             var oCuml2DateModelModel = this.getView().getModel('Cuml2Date');
@@ -1098,6 +1367,7 @@ sap.ui.define([
         },
         calcCurrentModel: function (InputField) {
             // Calculate Models When user enter values manually
+            console.log("calcCurrentModel called with InputField:", InputField, "Type:", typeof InputField);
 
             var oPrevCumlModel = this.getView().getModel('PrevCuml');
             var oCuml2DateModel = this.getView().getModel('Cuml2Date');
@@ -1177,10 +1447,8 @@ sap.ui.define([
                         // Derive Current from Cumulative
                         oCurrModel.setProperty('/PCLessRet', Number(oCuml2DateModel.getProperty("/PCCdLessRet")) - Number(oPrevCumlModel.getProperty("/PCPCmRetHld")));
                     }
-                } else if (!isUpdateScenario || !oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") ||
-                        oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") === "0.00") {
+                } else {
                     // User manually entered Current Retention, calculate Cumulative from it
-                    // Only if NOT an update scenario with existing backend value
                     if (!isNaN(oCurrModel.getProperty("/PCLessRet")))
                         oCuml2DateModel.setProperty('/PCCdLessRet', Number(oPrevCumlModel.getProperty("/PCPCmRetHld")) + Number(oCurrModel.getProperty("/PCLessRet")));
                 }
