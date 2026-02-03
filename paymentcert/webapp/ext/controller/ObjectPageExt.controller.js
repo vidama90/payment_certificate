@@ -1367,7 +1367,6 @@ sap.ui.define([
         },
         calcCurrentModel: function (InputField) {
             // Calculate Models When user enter values manually
-            console.log("calcCurrentModel called with InputField:", InputField, "Type:", typeof InputField);
 
             var oPrevCumlModel = this.getView().getModel('PrevCuml');
             var oCuml2DateModel = this.getView().getModel('Cuml2Date');
@@ -1406,17 +1405,17 @@ sap.ui.define([
                 if (!isNaN(oCurrModel.getProperty("/PCContDed")))
                     oCuml2DateModel.setProperty('/PCCdContDed', Number(oPrevCumlModel.getProperty("/PCPCmContDed")) + Number(oCurrModel.getProperty("/PCContDed")));
 
-                // STEP 2: Calculate Total Work Completed on CUMULATIVE (same as normal mode)
+                // STEP 2: Calculate Total Work Completed on CURRENT values for excluded company code
                 // Skip if user manually entered Current Total Work Completed
                 if (InputField !== 'PCTotComp') {
-                    var PCCdTotComp = Number(oCuml2DateModel.getProperty("/PCCdWipAm"))
-                        + Number(oCuml2DateModel.getProperty("/PCCdVarAd1"))
-                        - Number(oCuml2DateModel.getProperty("/PCCdVarOm1"))
-                        + Number(oCuml2DateModel.getProperty("/PCCdmatOns"))
-                        - Number(oCuml2DateModel.getProperty("/PCCdMatRec"));
-                    oCuml2DateModel.setProperty('/PCCdTotComp', PCCdTotComp);
-                    // Derive Current from Cumulative
-                    oCurrModel.setProperty('/PCTotComp', Number(oCuml2DateModel.getProperty("/PCCdTotComp")) - Number(oPrevCumlModel.getProperty("/PCPCmTotComp")));
+                    var PCTotComp = Number(oCurrModel.getProperty("/PCWipAm"))
+                        + Number(oCurrModel.getProperty("/PCVarAd1"))
+                        - Number(oCurrModel.getProperty("/PCVaRom1"))
+                        + Number(oCurrModel.getProperty("/PCMatOns"))
+                        - Number(oCurrModel.getProperty("/PCMatRec"));
+                    oCurrModel.setProperty('/PCTotComp', PCTotComp);
+                    // Derive Cumulative from Previous + Current
+                    oCuml2DateModel.setProperty('/PCCdTotComp', Number(oPrevCumlModel.getProperty("/PCPCmTotComp")) + Number(oCurrModel.getProperty("/PCTotComp")));
                 } else {
                     // User manually entered Current, calculate Cumulative from it
                     oCuml2DateModel.setProperty('/PCCdTotComp', Number(oPrevCumlModel.getProperty("/PCPCmTotComp")) + Number(oCurrModel.getProperty("/PCTotComp")));
@@ -1428,24 +1427,26 @@ sap.ui.define([
                     (!isUpdateScenario || !oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") ||
                         oCuml2DateModelBackEnd.getProperty("/PCCdLessRet") === "0.00");
                 if (shouldCalculateLessRetExcl) {
-                    // Apply retention percentage on CUMULATIVE base (same logic as normal mode)
-                    var PCCdLessRetBase = Number(oCuml2DateModel.getProperty("/PCCdWipAm"))
-                        + Number(oCuml2DateModel.getProperty("/PCCdVarAd1"))
-                        - Number(oCuml2DateModel.getProperty("/PCCdVarOm1"))
-                        + Number(oCuml2DateModel.getProperty("/PCCdmatOns"))
-                        - Number(oCuml2DateModel.getProperty("/PCCdMatRec"));
+                    // Apply retention percentage on CURRENT values for excluded company code
+                    var PCLessRetBase = Number(oCurrModel.getProperty("/PCWipAm"))
+                        + Number(oCurrModel.getProperty("/PCVarAd1"))
+                        - Number(oCurrModel.getProperty("/PCVaRom1"))
+                        + Number(oCurrModel.getProperty("/PCMatOns"))
+                        - Number(oCurrModel.getProperty("/PCMatRec"));
 
                     var RETPC = oConstants.getProperty('/RETPC');
                     var RETTP = oConstants.getProperty('/RETTP');
 
                     if (RETPC) {
-                        oCuml2DateModel.setProperty('/PCCdLessRet', RETPC * PCCdLessRetBase);
-                        // Derive Current from Cumulative
-                        oCurrModel.setProperty('/PCLessRet', Number(oCuml2DateModel.getProperty("/PCCdLessRet")) - Number(oPrevCumlModel.getProperty("/PCPCmRetHld")));
+                        // Calculate Current Retention from current values
+                        oCurrModel.setProperty('/PCLessRet', RETPC * PCLessRetBase);
+                        // Derive Cumulative from Previous + Current
+                        oCuml2DateModel.setProperty('/PCCdLessRet', Number(oPrevCumlModel.getProperty("/PCPCmRetHld")) + Number(oCurrModel.getProperty("/PCLessRet")));
                     } else if (RETTP) {
-                        oCuml2DateModel.setProperty('/PCCdLessRet', RETTP * PCCdLessRetBase);
-                        // Derive Current from Cumulative
-                        oCurrModel.setProperty('/PCLessRet', Number(oCuml2DateModel.getProperty("/PCCdLessRet")) - Number(oPrevCumlModel.getProperty("/PCPCmRetHld")));
+                        // Calculate Current Retention from current values
+                        oCurrModel.setProperty('/PCLessRet', RETTP * PCLessRetBase);
+                        // Derive Cumulative from Previous + Current
+                        oCuml2DateModel.setProperty('/PCCdLessRet', Number(oPrevCumlModel.getProperty("/PCPCmRetHld")) + Number(oCurrModel.getProperty("/PCLessRet")));
                     }
                 } else {
                     // User manually entered Current Retention, calculate Cumulative from it
@@ -1471,7 +1472,7 @@ sap.ui.define([
                     oCuml2DateModel.setProperty('/PCCdNetCer', Number(oPrevCumlModel.getProperty("/PCPCmNetCer")) + Number(oCurrModel.getProperty("/PCNetCer")));
                 }
 
-                // STEP 5: Calculate VAT on CUMULATIVE (same as normal mode)
+                // STEP 5: Calculate VAT on CURRENT values for excluded company code
                 // Skip if user manually entered Current VAT OR if update scenario with existing value
                 var shouldCalculateTaxExcl = InputField !== 'PCTax' &&
                     (!isUpdateScenario || !oCuml2DateModelBackEnd.getProperty("/PCCdTax") ||
@@ -1479,11 +1480,11 @@ sap.ui.define([
                 if (shouldCalculateTaxExcl) {
                     var TAXPCT = oConstants.getProperty('/TAXPCT');
                     if (TAXPCT) {
-                        // Apply VAT percentage on CUMULATIVE Net Amount (same logic as normal mode)
-                        var PCCdTax = Number(oCuml2DateModel.getProperty("/PCCdNetCer")) * TAXPCT;
-                        oCuml2DateModel.setProperty('/PCCdTax', PCCdTax);
-                        // Derive Current from Cumulative
-                        oCurrModel.setProperty('/PCTax', Number(oCuml2DateModel.getProperty("/PCCdTax")) - Number(oPrevCumlModel.getProperty("/PCPCmVat")));
+                        // Apply VAT percentage on CURRENT Net Amount for excluded company code
+                        var PCTax = Number(oCurrModel.getProperty("/PCNetCer")) * TAXPCT;
+                        oCurrModel.setProperty('/PCTax', PCTax);
+                        // Derive Cumulative from Previous + Current
+                        oCuml2DateModel.setProperty('/PCCdTax', Number(oPrevCumlModel.getProperty("/PCPCmVat")) + Number(oCurrModel.getProperty("/PCTax")));
                     }
                 } else {
                     // User manually entered Current VAT, calculate Cumulative from it
